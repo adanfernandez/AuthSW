@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import model.JWT;
 import model.User;
@@ -152,7 +154,7 @@ public class UserDAO implements UserDataService {
 			PreparedStatement ps = getConnection().prepareStatement(query);
 
 			ps.setString(1, jwt.getToken());
-			ps.setDate(2, convert(jwt.getExpiration()));
+			ps.setTimestamp(2, convert(jwt.getExpiration()));
 			ps.setLong(3, jwt.getIdUsuario());
 
 			ps.executeUpdate();
@@ -173,19 +175,16 @@ public class UserDAO implements UserDataService {
 
 	private User getUser(ResultSet rs) throws SQLException {
 		User user = new User();
-
 		user.setId(rs.getLong(1));
 		user.setEmail(rs.getString(2));
 		user.setName(rs.getString(3));
 		user.setSurname(rs.getString(4));
 		user.setPhone(rs.getString(5));
-
 		return user;
 	}
 
-	private static java.sql.Date convert(java.util.Date uDate) {
-		java.sql.Date sDate = new java.sql.Date(uDate.getTime());
-		return sDate;
+	private static Timestamp convert(Date date) {
+        return new Timestamp(date.getTime());  
 	}
 
 }
