@@ -80,5 +80,17 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public User(long id, String name, String email, String surname, String phone, String password) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.email = email;
+		this.surname = surname;
+		this.phone = phone;
+		this.password = password;
 	}	
+	
+	
 }
