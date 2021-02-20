@@ -17,10 +17,10 @@ public class MySQLCon {
 	public Connection getConnection() {
 		if (con == null) {
 			try {
-				Class.forName(config.get("DRIVER"));
+				Class.forName(config.get("driver"));
 				this.con = DriverManager
-						.getConnection(config.get("JDBC") + config.get("HOST") + "/" + config.get("DATABASE") + "?user="
-								+ config.get("USERNAME") + "&password=" + config.get("PASSWORD") + "&allowPublicKeyRetrieval=true&useSSL=false");
+						.getConnection(config.get("jdbc") + config.get("host") + "/" + config.get("database") + "?user="
+								+ config.get("username") + "&allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true");
 
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -3,6 +3,7 @@ package persistence.user;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import model.JWT;
 import model.User;
 
 public interface UserDataService {
@@ -15,9 +16,11 @@ public interface UserDataService {
 	
 	public boolean deleteUser(long id) throws SQLException;
 	
-	public boolean userExistsByEmail(String email) throws SQLException;
+	public User getUserByEmail(String email) throws SQLException;
 	
 	public User getUserByToken(String token) throws SQLException;
+	
+	public boolean saveToken(JWT jwt);
 	
 	public Connection getConnection();
 

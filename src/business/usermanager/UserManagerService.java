@@ -14,7 +14,7 @@ public interface UserManagerService {
 	
 	public boolean deleteUser(long id) throws SQLException;
 	
-	public JWT generateTokenFromEmail(String email);
+	public JWT generateTokenFromEmail(String email) throws SQLException;
 	
 	public User getUserByToken(String token) throws SQLException;
 	

@@ -4,14 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
+import model.JWT;
 import model.User;
 import persistence.MySQLCon;
 
 public class UserDAO implements UserDataService {
-	
+
 	private Connection connection = null;
 
 	@Override
@@ -24,27 +23,24 @@ public class UserDAO implements UserDataService {
 
 	@Override
 	public boolean saveUser(User user) {
-		String query = "INSERT INTO USER (`email`,`name`,`surname`,`phone`,`password`) VALUES (?,?,?,?,?);";
-		List<User> users = new ArrayList<User>();
+		String query = "INSERT INTO `USER` (email,name,surname,phone,password) VALUES (?,?,?,?,?);";
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(query);
-			
-			ps.setLong(1, user.getId());
-			ps.setString(2, user.getEmail());
-			ps.setString(3, user.getName());
-			ps.setString(4, user.getSurname());
-			ps.setString(5, user.getPhone());
-			
-			ResultSet rs = ps.executeQuery();
-			while(rs.next()) {
-				users.add(this.getUser(rs));
-			}
+
+			ps.setString(1, user.getEmail());
+			ps.setString(2, user.getName());
+			ps.setString(3, user.getSurname());
+			ps.setString(4, user.getPhone());
+			ps.setString(5, user.getPassword());
+
+			ps.executeUpdate();
 			return true;
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
 			try {
 				getConnection().close();
+				this.connection = null;
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -78,7 +74,7 @@ public class UserDAO implements UserDataService {
 		String query = "UPDATE User SET email = ?, name = ?, surname = ?, phone = ?, deleted = ?;";
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(query);
-			
+
 			ps.setString(1, user.getEmail());
 			ps.setString(2, user.getName());
 			ps.setString(3, user.getSurname());
@@ -111,8 +107,8 @@ public class UserDAO implements UserDataService {
 	}
 
 	@Override
-	public boolean userExistsByEmail(String email) throws SQLException {
-		String query = "SELECT * FROM user WHERE email = ?;";
+	public User getUserByEmail(String email) throws SQLException {
+		String query = "SELECT * FROM user WHERE email = ? and deleted = false;";
 		User user = null;
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(query);
@@ -125,13 +121,14 @@ public class UserDAO implements UserDataService {
 			ex.printStackTrace();
 		} finally {
 			getConnection().close();
+			this.connection = null;
 		}
-		return user != null;
+		return user;
 	}
 
 	@Override
 	public User getUserByToken(String token) throws SQLException {
-		String query = "SELECT * from User, jwt where jwt.user_id = user.id and jwt.value = ?";
+		String query = "SELECT * from User, jwt where jwt.user_id = user.id and jwt.value = ? and jwt.expiration > CURRENT_TIMESTAMP";
 		User user = null;
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(query);
@@ -147,7 +144,33 @@ public class UserDAO implements UserDataService {
 		}
 		return user;
 	}
-	
+
+	@Override
+	public boolean saveToken(JWT jwt) {
+		String query = "INSERT INTO jwt (value, expiration, user_id) VALUES (?,?,?);";
+		try {
+			PreparedStatement ps = getConnection().prepareStatement(query);
+
+			ps.setString(1, jwt.getToken());
+			ps.setDate(2, convert(jwt.getExpiration()));
+			ps.setLong(3, jwt.getIdUsuario());
+
+			ps.executeUpdate();
+			return true;
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		} finally {
+			try {
+				getConnection().close();
+				this.connection = null;
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
+
 	private User getUser(ResultSet rs) throws SQLException {
 		User user = new User();
 
@@ -156,8 +179,13 @@ public class UserDAO implements UserDataService {
 		user.setName(rs.getString(3));
 		user.setSurname(rs.getString(4));
 		user.setPhone(rs.getString(5));
-		
+
 		return user;
 	}
-	
+
+	private static java.sql.Date convert(java.util.Date uDate) {
+		java.sql.Date sDate = new java.sql.Date(uDate.getTime());
+		return sDate;
+	}
+
 }

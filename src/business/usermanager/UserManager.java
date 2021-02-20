@@ -18,13 +18,13 @@ public class UserManager implements UserManagerService {
 	@Override
 	public boolean saveUser(User user) throws NoSuchAlgorithmException, SQLException {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
-		if (userDataService.userExistsByEmail(user.getEmail())) {
+		if (userDataService.getUserByEmail(user.getEmail()) == null) {
 			user.setPassword(EncryptionUtils.encrypt(user.getPassword()));
 			return userDataService.saveUser(user);
 		}
 		return false;
 	}
-
+ 
 	@Override
 	public User getUserByEmailAndPassword(String email, String password) throws NoSuchAlgorithmException, SQLException {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
@@ -41,18 +41,26 @@ public class UserManager implements UserManagerService {
 		return false;
 	}
 
-	public JWT generateTokenFromEmail(String email) {
+	public JWT generateTokenFromEmail(String email) throws SQLException {
 		Date expiration = calculateTokenExpiration();
-		String tokenValue = Jwts.builder().setIssuedAt(new Date()).setIssuer("email")
-				.setSubject(String.valueOf(email)).setExpiration(expiration)
-				.signWith(SignatureAlgorithm.HS512, Config.getInstance().get("privateKey")).compact();
-		return new JWT(email, tokenValue,  expiration);
+		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
+		User user = userDataService.getUserByEmail(email);
+		if(user != null) {
+			String tokenValue = Jwts.builder().setIssuedAt(new Date()).setIssuer("email")
+					.setSubject(String.valueOf(email)).setExpiration(expiration)
+					.signWith(SignatureAlgorithm.HS512, Config.getInstance().get("privateKey"))
+					.compact();
+			JWT jwt = new JWT(email, tokenValue,  expiration, user.getId());
+			userDataService.saveToken(jwt);
+			return jwt;
+		}
+		return null;		
 	}
 
 	/**
 	 * Calculate expiration of a JWT
 	 * 
-	 * @return
+	 * @return 
 	 */
 	private static Date calculateTokenExpiration() {
 		Long expiration = Long.parseLong(Config.getInstance().get("expiration"));
@@ -70,5 +78,4 @@ public class UserManager implements UserManagerService {
 		} 
 		return user;
 	}
-
 }
