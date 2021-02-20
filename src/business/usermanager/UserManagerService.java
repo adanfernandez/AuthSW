@@ -13,5 +13,8 @@ public interface UserManagerService {
 	
 	public boolean deleteUser(long id);
 	
-	public JWT getTokenFromEmail(String email);
+	public JWT generateTokenFromEmail(String email);
+	
+	public User getUserByToken(String token);
+	
 }

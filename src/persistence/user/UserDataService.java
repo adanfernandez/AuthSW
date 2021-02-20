@@ -1,5 +1,7 @@
 package persistence.user;
 
+import java.sql.Connection;
+
 import model.User;
 
 public interface UserDataService {
@@ -13,4 +15,9 @@ public interface UserDataService {
 	public boolean deleteUser(long id);
 	
 	public boolean userExistsByEmail(String email);
+	
+	public User getUserByToken(String token);
+	
+	public Connection getConnection();
+
 }

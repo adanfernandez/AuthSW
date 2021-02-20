@@ -40,7 +40,7 @@ public class UserManager implements UserManagerService {
 		return false;
 	}
 
-	public JWT getTokenFromEmail(String email) {
+	public JWT generateTokenFromEmail(String email) {
 		Date expiration = calculateTokenExpiration();
 		String tokenValue = Jwts.builder().setIssuedAt(new Date()).setIssuer("email")
 				.setSubject(String.valueOf(email)).setExpiration(expiration)
@@ -57,6 +57,17 @@ public class UserManager implements UserManagerService {
 		Long expiration = Long.parseLong(Config.getInstance().get("expiration"));
 		Date date = new Date(new Date().getTime() + expiration);
 		return date;
+	}
+
+	@Override
+	public User getUserByToken(String token) {
+		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
+		User user = userDataService.getUserByToken(token);
+		if(user == null) {
+			//Enviamos excepción de 401?
+			return null;
+		} 
+		return user;
 	}
 
 }
