@@ -6,6 +6,7 @@ import java.util.Date;
 import conf.Config;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import model.JWT;
 import model.User;
 import persistence.SimpleDataServiceFactory;
 import persistence.user.UserDataService;
@@ -14,9 +15,10 @@ import utils.EncryptionUtils;
 public class UserManager implements UserManagerService {
 
 	@Override
-	public boolean saveUser(User user) {
+	public boolean saveUser(User user) throws NoSuchAlgorithmException {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
 		if (userDataService.userExistsByEmail(user.getEmail())) {
+			user.setPassword(EncryptionUtils.encrypt(user.getPassword()));
 			return userDataService.saveUser(user);
 		}
 		return false;
@@ -38,11 +40,12 @@ public class UserManager implements UserManagerService {
 		return false;
 	}
 
-	public String generateToken(User user) {
+	public JWT getTokenFromEmail(String email) {
 		Date expiration = calculateTokenExpiration();
-		return Jwts.builder().setIssuedAt(new Date()).setIssuer("EMAIL")
-				.setSubject(user.getEmail()).setExpiration(expiration)
+		String tokenValue = Jwts.builder().setIssuedAt(new Date()).setIssuer("email")
+				.setSubject(String.valueOf(email)).setExpiration(expiration)
 				.signWith(SignatureAlgorithm.HS512, Config.getInstance().get("privateKey")).compact();
+		return new JWT(email, tokenValue,  expiration);
 	}
 
 	/**
