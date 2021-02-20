@@ -1,6 +1,7 @@
 package business.usermanager;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.Date;
 
 import conf.Config;
@@ -15,7 +16,7 @@ import utils.EncryptionUtils;
 public class UserManager implements UserManagerService {
 
 	@Override
-	public boolean saveUser(User user) throws NoSuchAlgorithmException {
+	public boolean saveUser(User user) throws NoSuchAlgorithmException, SQLException {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
 		if (userDataService.userExistsByEmail(user.getEmail())) {
 			user.setPassword(EncryptionUtils.encrypt(user.getPassword()));
@@ -25,7 +26,7 @@ public class UserManager implements UserManagerService {
 	}
 
 	@Override
-	public User getUserByEmailAndPassword(String email, String password) throws NoSuchAlgorithmException {
+	public User getUserByEmailAndPassword(String email, String password) throws NoSuchAlgorithmException, SQLException {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
 		if (email != null && password != null) {
 			return userDataService.getUserByEmailAndPassword(email, EncryptionUtils.encrypt(password));
@@ -34,7 +35,7 @@ public class UserManager implements UserManagerService {
 	}
 
 	@Override
-	public boolean deleteUser(long id) {
+	public boolean deleteUser(long id) throws SQLException {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
 		userDataService.deleteUser(id);
 		return false;
@@ -60,7 +61,7 @@ public class UserManager implements UserManagerService {
 	}
 
 	@Override
-	public User getUserByToken(String token) {
+	public User getUserByToken(String token) throws SQLException {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
 		User user = userDataService.getUserByToken(token);
 		if(user == null) {
