@@ -24,7 +24,7 @@ public class UserDAO implements UserDataService {
 
 	@Override
 	public boolean saveUser(User user) {
-		String query = "INSERT INTO USER (`email`,`name`,`surname`,`phone`,`password`) VALUES (?,?,?,?,?); ";
+		String query = "INSERT INTO USER (`email`,`name`,`surname`,`phone`,`password`) VALUES (?,?,?,?,?);";
 		List<User> users = new ArrayList<User>();
 		try {
 			PreparedStatement ps = getConnection().prepareStatement(query);
@@ -54,33 +54,98 @@ public class UserDAO implements UserDataService {
 	}
 
 	@Override
-	public User getUserByEmailAndPassword(String email, String password) {
-		// TODO Auto-generated method stub
-		return null;
+	public User getUserByEmailAndPassword(String email, String password) throws SQLException {
+		String query = "SELECT * FROM user WHERE email = ? and password = ?;";
+		User user = null;
+		try {
+			PreparedStatement ps = getConnection().prepareStatement(query);
+			ps.setString(1, email);
+			ps.setString(2, password);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				user = this.getUser(rs);
+			}
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		} finally {
+			getConnection().close();
+		}
+		return user;
 	}
 
 	@Override
-	public boolean updateUser(User user) {
-		// TODO Auto-generated method stub
+	public boolean updateUser(User user) throws SQLException {
+		String query = "UPDATE User SET email = ?, name = ?, surname = ?, phone = ?, deleted = ?;";
+		try {
+			PreparedStatement ps = getConnection().prepareStatement(query);
+			
+			ps.setString(1, user.getEmail());
+			ps.setString(2, user.getName());
+			ps.setString(3, user.getSurname());
+			ps.setString(4, user.getPhone());
+			ps.setBoolean(5, user.isDeleted());
+			ps.executeUpdate();
+			return true;
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		} finally {
+			getConnection().close();
+		}
 		return false;
 	}
 
 	@Override
-	public boolean deleteUser(long user) {
-		// TODO Auto-generated method stub
+	public boolean deleteUser(long id) throws SQLException {
+		String query = "UPDATE user SET deleted=true WHERE id=?;";
+		try {
+			PreparedStatement ps = getConnection().prepareStatement(query);
+			ps.setLong(1, id);
+			ps.executeUpdate();
+			return true;
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		} finally {
+			getConnection().close();
+		}
 		return false;
 	}
 
 	@Override
-	public boolean userExistsByEmail(String email) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean userExistsByEmail(String email) throws SQLException {
+		String query = "SELECT * FROM user WHERE email = ?;";
+		User user = null;
+		try {
+			PreparedStatement ps = getConnection().prepareStatement(query);
+			ps.setString(1, email);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				user = this.getUser(rs);
+			}
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		} finally {
+			getConnection().close();
+		}
+		return user != null;
 	}
 
 	@Override
-	public User getUserByToken(String token) {
-		// TODO Auto-generated method stub
-		return null;
+	public User getUserByToken(String token) throws SQLException {
+		String query = "SELECT * from User, jwt where jwt.user_id = user.id and jwt.value = ?";
+		User user = null;
+		try {
+			PreparedStatement ps = getConnection().prepareStatement(query);
+			ps.setString(1, token);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+				user = this.getUser(rs);
+			}
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		} finally {
+			getConnection().close();
+		}
+		return user;
 	}
 	
 	private User getUser(ResultSet rs) throws SQLException {

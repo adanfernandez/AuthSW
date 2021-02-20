@@ -30,6 +30,8 @@ public class User {
 	@NotNull
 	private String password;
 	
+	private boolean deleted;
+	
 	public User() {
 		super();
 	}
@@ -80,6 +82,14 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+	
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+	
+	public boolean isDeleted() {
+		return deleted;
 	}
 
 	public User(long id, String name, String email, String surname, String phone, String password) {
