@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(uniqueConstraints={@UniqueConstraint(columnNames={"email"})})
@@ -15,19 +14,16 @@ public class User {
 	@GeneratedValue
 	private long id;
 	
-	@NotNull
+
 	private String name;
 	
     @Column(name = "email")
-    @NotNull
 	private String email;
 
-    @NotNull
 	private String surname;
 	
 	private String phone;
 	
-	@NotNull
 	private String password;
 	
 	private boolean deleted;

@@ -44,7 +44,6 @@ public class UserDAO implements UserDataService {
 				getConnection().close();
 				this.connection = null;
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -166,7 +165,6 @@ public class UserDAO implements UserDataService {
 				getConnection().close();
 				this.connection = null;
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

@@ -16,66 +16,98 @@ import utils.EncryptionUtils;
 public class UserManager implements UserManagerService {
 
 	@Override
-	public boolean saveUser(User user) throws NoSuchAlgorithmException, SQLException {
+	public boolean saveUser(User user) {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
-		if (userDataService.getUserByEmail(user.getEmail()) == null) {
-			user.setPassword(EncryptionUtils.encrypt(user.getPassword()));
-			return userDataService.saveUser(user);
+		try {
+			if (userDataService.getUserByEmail(user.getEmail()) == null) {
+				user.setPassword(EncryptionUtils.encrypt(user.getPassword()));
+				return userDataService.saveUser(user);
+			}
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Revisar que hacer con el error
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Revisar que hacer con el error
+			e.printStackTrace();
 		}
 		return false;
 	}
- 
+
 	@Override
-	public User getUserByEmailAndPassword(String email, String password) throws NoSuchAlgorithmException, SQLException {
+	public User getUserByEmailAndPassword(String email, String password) {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
-		if (email != null && password != null) {
-			return userDataService.getUserByEmailAndPassword(email, EncryptionUtils.encrypt(password));
+		try {
+			if (email != null && password != null) {
+				return userDataService.getUserByEmailAndPassword(email, EncryptionUtils.encrypt(password));
+			}
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Revisar que hacer con el error
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Revisar que hacer con el error
+			e.printStackTrace();
 		}
 		return null;
 	}
 
 	@Override
-	public boolean deleteUser(long id) throws SQLException {
+	public boolean deleteUser(long id) {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
-		userDataService.deleteUser(id);
+		try {
+			userDataService.deleteUser(id);
+		} catch (SQLException e) {
+			// TODO Revisar que hacer con el error
+			e.printStackTrace();
+		}
 		return false;
 	}
 
-	public JWT generateTokenFromEmail(String email) throws SQLException {
+	public JWT generateTokenFromEmail(String email) {
 		Date expiration = calculateTokenExpiration();
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
-		User user = userDataService.getUserByEmail(email);
-		if(user != null) {
-			String tokenValue = Jwts.builder().setIssuedAt(new Date()).setIssuer("email")
-					.setSubject(String.valueOf(email)).setExpiration(expiration)
-					.signWith(SignatureAlgorithm.HS512, Config.getInstance().get("privateKey"))
-					.compact();
-			JWT jwt = new JWT(email, tokenValue,  expiration, user.getId());
-			userDataService.saveToken(jwt);
-			return jwt;
+		User user;
+		try {
+			user = userDataService.getUserByEmail(email);
+			if (user != null) {
+				String tokenValue = Jwts.builder().setIssuedAt(new Date()).setIssuer("email")
+						.setSubject(String.valueOf(email)).setExpiration(expiration)
+						.signWith(SignatureAlgorithm.HS512, Config.getInstance().get("privateKey")).compact();
+				JWT jwt = new JWT(email, tokenValue, expiration, user.getId());
+				userDataService.saveToken(jwt);
+				return jwt;
+			}
+		} catch (SQLException e) {
+			// TODO Revisar que hacer con el error
+			e.printStackTrace();
 		}
-		return null;		
+		return null;
+	}
+
+	@Override
+	public User getUserByToken(String token) {
+		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
+		User user = null;
+		try {
+			user = userDataService.getUserByToken(token);
+			if (user == null) {
+				// TODO: Enviamos excepción de 401?
+				return null;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return user;
 	}
 
 	/**
 	 * Calculate expiration of a JWT
 	 * 
-	 * @return 
+	 * @return
 	 */
 	private static Date calculateTokenExpiration() {
 		Long expiration = Long.parseLong(Config.getInstance().get("expiration"));
 		Date date = new Date(new Date().getTime() + expiration);
 		return date;
-	}
-
-	@Override
-	public User getUserByToken(String token) throws SQLException {
-		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
-		User user = userDataService.getUserByToken(token);
-		if(user == null) {
-			//Enviamos excepción de 401?
-			return null;
-		} 
-		return user;
 	}
 }
