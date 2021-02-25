@@ -1,6 +1,5 @@
 package persistence.user;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,12 +12,12 @@ import persistence.MySQLCon;
 
 public class UserDAO implements UserDataService {
 
-	private Connection connection = null;
+	private MySQLCon connection = null;
 
 	@Override
-	public Connection getConnection() {
+	public MySQLCon getConnection() {
 		if (connection == null) {
-			connection = new MySQLCon().getConnection();
+			connection = new MySQLCon();
 		}
 		return connection;
 	}
@@ -27,7 +26,7 @@ public class UserDAO implements UserDataService {
 	public boolean saveUser(User user) {
 		String query = "INSERT INTO `USER` (email,name,surname,phone,password) VALUES (?,?,?,?,?);";
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(query);
+			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 
 			ps.setString(1, user.getEmail());
 			ps.setString(2, user.getName());
@@ -40,12 +39,8 @@ public class UserDAO implements UserDataService {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			try {
-				getConnection().close();
-				this.connection = null;
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			getConnection().closeConnection();
+			this.connection = null;
 		}
 		return false;
 	}
@@ -55,7 +50,7 @@ public class UserDAO implements UserDataService {
 		String query = "SELECT * FROM user WHERE email = ? and password = ?;";
 		User user = null;
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(query);
+			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 			ps.setString(1, email);
 			ps.setString(2, password);
 			ResultSet rs = ps.executeQuery();
@@ -65,7 +60,7 @@ public class UserDAO implements UserDataService {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			getConnection().close();
+			getConnection().closeConnection();
 		}
 		return user;
 	}
@@ -74,7 +69,7 @@ public class UserDAO implements UserDataService {
 	public boolean updateUser(User user) throws SQLException {
 		String query = "UPDATE User SET email = ?, name = ?, surname = ?, phone = ?, deleted = ?;";
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(query);
+			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 
 			ps.setString(1, user.getEmail());
 			ps.setString(2, user.getName());
@@ -86,7 +81,7 @@ public class UserDAO implements UserDataService {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			getConnection().close();
+			getConnection().closeConnection();
 		}
 		return false;
 	}
@@ -95,14 +90,14 @@ public class UserDAO implements UserDataService {
 	public boolean deleteUser(long id) throws SQLException {
 		String query = "UPDATE user SET deleted=true WHERE id=?;";
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(query);
+			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 			ps.setLong(1, id);
 			ps.executeUpdate();
 			return true;
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			getConnection().close();
+			getConnection().closeConnection();
 		}
 		return false;
 	}
@@ -112,7 +107,7 @@ public class UserDAO implements UserDataService {
 		String query = "SELECT * FROM user WHERE email = ? and deleted = false;";
 		User user = null;
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(query);
+			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 			ps.setString(1, email);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -121,7 +116,7 @@ public class UserDAO implements UserDataService {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			getConnection().close();
+			getConnection().getConnection().close();
 			this.connection = null;
 		}
 		return user;
@@ -132,7 +127,7 @@ public class UserDAO implements UserDataService {
 		String query = "SELECT * from User, jwt where jwt.user_id = user.id and jwt.value = ? and jwt.expiration > CURRENT_TIMESTAMP";
 		User user = null;
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(query);
+			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 			ps.setString(1, token);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -141,7 +136,7 @@ public class UserDAO implements UserDataService {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			getConnection().close();
+			getConnection().closeConnection();
 		}
 		return user;
 	}
@@ -150,7 +145,7 @@ public class UserDAO implements UserDataService {
 	public boolean saveToken(JWT jwt) {
 		String query = "INSERT INTO jwt (value, expiration, user_id) VALUES (?,?,?);";
 		try {
-			PreparedStatement ps = getConnection().prepareStatement(query);
+			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 
 			ps.setString(1, jwt.getToken());
 			ps.setTimestamp(2, convert(jwt.getExpiration()));
@@ -161,12 +156,8 @@ public class UserDAO implements UserDataService {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			try {
-				getConnection().close();
-				this.connection = null;
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			getConnection().closeConnection();
+			this.connection = null;
 		}
 		return false;
 	}
@@ -182,7 +173,7 @@ public class UserDAO implements UserDataService {
 	}
 
 	private static Timestamp convert(Date date) {
-        return new Timestamp(date.getTime());  
+		return new Timestamp(date.getTime());
 	}
 
 }

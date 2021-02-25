@@ -1,10 +1,10 @@
 package persistence.user;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 import model.JWT;
 import model.User;
+import persistence.MySQLCon;
 
 public interface UserDataService {
 	
@@ -22,6 +22,6 @@ public interface UserDataService {
 	
 	public boolean saveToken(JWT jwt);
 	
-	public Connection getConnection();
+	public MySQLCon getConnection();
 
 }
