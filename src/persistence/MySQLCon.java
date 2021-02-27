@@ -17,10 +17,9 @@ public class MySQLCon {
 	public Connection getConnection() {
 		if (con == null) {
 			try {
-				Class.forName(config.get("driver"));
+				Class.forName("com.mysql.jdbc.Driver");
 				this.con = DriverManager
-						.getConnection(config.get("jdbc") + config.get("host") + "/" + config.get("database") + "?user="
-								+ config.get("username") + "&allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true");
+						.getConnection("jdbc:mysql://localhost:3306/prueba_sw?user=vmchaves?password=123456&allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true");
 
 			} catch (Exception e) {
 				e.printStackTrace();
