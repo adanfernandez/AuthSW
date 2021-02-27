@@ -24,7 +24,7 @@ public class UserDAO implements UserDataService {
 
 	@Override
 	public boolean saveUser(User user) {
-		String query = "INSERT INTO `USER` (email,name,surname,phone,password) VALUES (?,?,?,?,?);";
+		String query = "INSERT INTO user (email,name,surname,phone,password) VALUES (?,?,?,?,?);";
 		try {
 			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
 
@@ -40,7 +40,6 @@ public class UserDAO implements UserDataService {
 			ex.printStackTrace();
 		} finally {
 			getConnection().closeConnection();
-			this.connection = null;
 		}
 		return false;
 	}
@@ -116,15 +115,14 @@ public class UserDAO implements UserDataService {
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 		} finally {
-			getConnection().getConnection().close();
-			this.connection = null;
+			getConnection().closeConnection();
 		}
 		return user;
 	}
 
 	@Override
 	public User getUserByToken(String token) throws SQLException {
-		String query = "SELECT * from User, jwt where jwt.user_id = user.id and jwt.value = ? and jwt.expiration > CURRENT_TIMESTAMP";
+		String query = "SELECT * from user, jwt where jwt.user_id = user.id and jwt.value = ? and jwt.expiration > CURRENT_TIMESTAMP";
 		User user = null;
 		try {
 			PreparedStatement ps = getConnection().getConnection().prepareStatement(query);
@@ -157,7 +155,6 @@ public class UserDAO implements UserDataService {
 			ex.printStackTrace();
 		} finally {
 			getConnection().closeConnection();
-			this.connection = null;
 		}
 		return false;
 	}

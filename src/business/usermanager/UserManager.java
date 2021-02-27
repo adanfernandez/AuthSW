@@ -19,6 +19,10 @@ public class UserManager implements UserManagerService {
 	public boolean saveUser(User user) {
 		UserDataService userDataService = new SimpleDataServiceFactory().getUserDataService();
 		try {
+			if(user== null) {
+				System.out.println("NULL");
+				return false;
+			}
 			if (userDataService.getUserByEmail(user.getEmail()) == null) {
 				user.setPassword(EncryptionUtils.encrypt(user.getPassword()));
 				return userDataService.saveUser(user);

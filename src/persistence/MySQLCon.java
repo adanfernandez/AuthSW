@@ -11,16 +11,14 @@ import conf.Config;
 public class MySQLCon {
 
 	private Connection con;
-	private Config config = Config.getInstance();	
-
+	private Config config = Config.getInstance();
 
 	public Connection getConnection() {
+
 		if (con == null) {
 			try {
-				Class.forName("com.mysql.jdbc.Driver");
-				this.con = DriverManager
-						.getConnection("jdbc:mysql://localhost:3306/prueba_sw?user=vmchaves?password=123456&allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true");
-
+				Class.forName(config.get("DRIVER"));
+				this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/prueba_sw?user=vmchaves&password=123456&allowPublicKeyRetrieval=true&useSSL=false");
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -30,7 +28,10 @@ public class MySQLCon {
 
 	public void closeConnection() {
 		try {
-			con.close();
+			if (con != null) {
+				this.con.close();
+				this.con = null;
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
