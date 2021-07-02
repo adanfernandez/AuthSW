@@ -4,7 +4,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
 
-import conf.Config;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import model.JWT;
@@ -75,7 +74,7 @@ public class UserManager implements UserManagerService {
 			if (user != null) {
 				String tokenValue = Jwts.builder().setIssuedAt(new Date()).setIssuer("email")
 						.setSubject(String.valueOf(email)).setExpiration(expiration)
-						.signWith(SignatureAlgorithm.HS512, Config.getInstance().get("privateKey")).compact();
+						.signWith(SignatureAlgorithm.HS512, System.getenv("PRIVATE_KEY")).compact();
 				JWT jwt = new JWT(email, tokenValue, expiration, user.getId());
 				userDataService.saveToken(jwt);
 				return jwt;
@@ -110,7 +109,7 @@ public class UserManager implements UserManagerService {
 	 * @return
 	 */
 	private static Date calculateTokenExpiration() {
-		Long expiration = Long.parseLong(Config.getInstance().get("expiration"));
+		Long expiration = Long.parseLong(System.getenv("EXPIRATION"));
 		Date date = new Date(new Date().getTime() + expiration);
 		return date;
 	}

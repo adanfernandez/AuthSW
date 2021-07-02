@@ -1,6 +1,9 @@
 package webservices;
 
 import javax.jws.WebService;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import business.SimpleBusinessFactory;
 import business.usermanager.UserManagerService;
